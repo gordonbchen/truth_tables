@@ -1,24 +1,42 @@
-def implies(p: bool, q: bool) -> bool:
-    """Return True if p implies q is satisfied."""
-    return (not p) or (p and q)
+from itertools import product
+from inspect import signature
 
 
-def iff(p: bool, q: bool) -> bool:
-    """Return True if p implies q and q implies p."""
-    return implies(p, q) and implies(q, p)
+def implies(a: bool, b: bool) -> bool:
+    """a implies b."""
+    return (not a) or (a and b)
 
 
-def func(p: bool, q: bool) -> bool:
-    """Function to create truth table for."""
-    return implies(p or (not q), p and q)
+def iff(a: bool, b: bool) -> bool:
+    """(a implies b) and (b implies a)."""
+    return implies(a, b) and implies(b, a)
+
+
+def func1(a: bool, b: bool, c: bool) -> bool:
+    return implies(implies(a, implies(b, c)), implies(a and b, c))
+
+
+def func2(a: bool, b: bool, c: bool) -> bool:
+    return (not ((not a) or ((not b) or c))) or ((not (a and b)) or c)
+
+
+def func3(a: bool, b: bool, c: bool) -> bool:
+    return not (not (a and (b and (not c))) and ((a and b) and (not c)))
 
 
 if __name__ == "__main__":
-    print("P\tQ\tFunc")
-    print("-" * 20)
+    funcs = [func1, func2, func3]
+
+    # Funcs must take the same # of params. If not, just make a dummy param.
+    n_params = len(signature(funcs[0]).parameters)
+
+    names = [chr(97 + i) for i in range(n_params)] + [f"func{i}" for i in range(len(funcs))]
+    print("\t".join(names))
+    print("-" * 8 * len(names))
 
     bools = (True, False)
-    for p in bools:
-        for q in bools:
-            x = func(p, q)
-            print(f"{p}\t{q}\t{x}")
+    for args in product(*(bools for i in range(n_params))):
+        outputs = [f(*args) for f in funcs]
+
+        bs = list(args) + outputs
+        print("\t".join([str(i) for i in bs]))
